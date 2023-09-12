@@ -18,11 +18,12 @@ jobs:
         with:
           python-version: '3.x'
 
-      - name: Run Workflow B
-        id: workflow-b
-        uses: ./.github/workflows/B.yml
-        with:
-          key: ${{ secrets.YOUR_KEY_SECRET }}
+      - name: Set environment variables
+        run: |
+          echo "export APP_ID=this is test app id" >> $GITHUB_ENV
+          echo "export SUITE_NAME=this is test suite name" >> $GITHUB_ENV
 
-      - name: Display Workflow B Result
-        run: echo "Workflow B Result: ${{ steps.workflow-b.outputs.result }}"
+      - name: Run Workflow B
+        run: |
+          echo "::set-output name=appID::${APP_ID}"
+          echo "::set-output name=suiteName::${SUITE_NAME}"
