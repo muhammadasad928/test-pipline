@@ -1,0 +1,28 @@
+name: Workflow A
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.x'
+
+      - name: Run Workflow B
+        id: workflow-b
+        uses: ./.github/workflows/B.yml
+        with:
+          key: ${{ secrets.YOUR_KEY_SECRET }}
+
+      - name: Display Workflow B Result
+        run: echo "Workflow B Result: ${{ steps.workflow-b.outputs.result }}"
