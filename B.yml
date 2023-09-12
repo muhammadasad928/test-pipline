@@ -1,1 +1,11 @@
 
+name: Workflow B
+
+inputs:
+  key:
+    description: 'The key to be used in Workflow B'
+    required: true
+
+outputs:
+  result:
+    description: 'Any result from Workflow B'
