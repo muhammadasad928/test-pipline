@@ -13,7 +13,7 @@ jobs:
     steps:
       - name: Display Input Parameters
         run: |
-          echo "appID: ${{ github.event.workflow_run.outputs.appID }}"
-          echo "suiteName: ${{ github.event.workflow_run.outputs.suiteName }}"
+          echo "appID: "
+          echo "suiteName:"
 
       # Add your workflow B steps here using the appID and suiteName variables
