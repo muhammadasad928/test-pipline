@@ -1,0 +1,19 @@
+name: Workflow B
+
+on:
+  workflow_run:
+    workflows: ["Workflow A"]
+    types:
+      - completed
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Display Input Parameters
+        run: |
+          echo "appID: ${{ github.event.workflow_run.outputs.appID }}"
+          echo "suiteName: ${{ github.event.workflow_run.outputs.suiteName }}"
+
+      # Add your workflow B steps here using the appID and suiteName variables
