@@ -1,4 +1,4 @@
-name: Workflow A
+name: Deploy and Run Tests
 
 on:
   push:
@@ -6,24 +6,42 @@ on:
       - main
 
 jobs:
-  build:
+  deploy:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout code
+      - name: Checkout Code
         uses: actions/checkout@v2
 
-      - name: Set up Python
-        uses: actions/setup-python@v2
-        with:
-          python-version: '3.x'
+      - name: Install OpenVPN
+        run: sudo apt-get update && sudo apt-get install -y openvpn
 
-      - name: Set environment variables
+      - name: Setup VPN Connection
         run: |
-          echo "export APP_ID=this is test app id" >> $GITHUB_ENV
-          echo "export SUITE_NAME=this is test suite name" >> $GITHUB_ENV
+          echo "$VPN_CONFIG" > vpn-config.ovpn
+          echo -e "${VPN_USERNAME}\n${VPN_PASSWORD}" > vpn-credentials.txt
+          sudo openvpn --config vpn-config.ovpn --auth-user-pass vpn-credentials.txt --daemon
+          sleep 10 # Wait for VPN to establish connection
 
-      - name: Run Workflow B
+      - name: Deploy Frontend/Backend
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+          SERVER_USER: 'your_server_user'
+          SERVER_HOST: 'your_server_ip'
         run: |
-          echo "::set-output name=appID::${APP_ID}"
-          echo "::set-output name=suiteName::${SUITE_NAME}"
+          echo "$SSH_PRIVATE_KEY" > private_key.pem
+          chmod 600 private_key.pem
+          ssh -i private_key.pem $SERVER_USER@$SERVER_HOST "cd /path/to/your/project && git pull && sudo docker-compose up -d"
+
+  run-tests:
+    runs-on: ubuntu-latest
+    needs: deploy
+
+    steps:
+      - name: Trigger QA Workflow
+        env:
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
+        run: |
+          curl -X POST -H "Accept: application/vnd.github+json" -H "Authorization: token $GH_TOKEN" \
+          https://api.github.com/repos/your-org/QA/actions/workflows/test.yml/dispatches \
+          -d '{"ref":"main"}'
